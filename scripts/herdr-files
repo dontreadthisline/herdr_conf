@@ -10,13 +10,17 @@ echo "=== $(date) ==="
 HERDR_BIN=$(command -v herdr) || { echo "herdr not found in PATH"; exit 1; }
 JQ_BIN=$(command -v jq) || { echo "jq not found in PATH"; exit 1; }
 
-# Get pane with claude agent (working or idle)
-pane_id=$($HERDR_BIN pane list 2>/dev/null | $JQ_BIN -r '.result.panes[] | select(.agent == "claude" and (.agent_status == "working" or .agent_status == "idle")) | .pane_id' | head -1)
+# HERDR_ACTIVE_PANE_ID is the pane where user pressed the keybinding
+# Fallback: get focused pane
+pane_id="${HERDR_ACTIVE_PANE_ID:-}"
+if [ -z "$pane_id" ]; then
+    pane_id=$($HERDR_BIN pane list 2>/dev/null | $JQ_BIN -r '.result.panes[] | select(.focused == true) | .pane_id // empty' | head -1)
+fi
 
 echo "Using pane: $pane_id"
 
 if [ -z "$pane_id" ]; then
-    echo "No pane with claude agent found"
+    echo "No pane found"
     exit 1
 fi
 

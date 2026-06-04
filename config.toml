@@ -49,3 +49,8 @@ command = "herdr-urls"
 key = "prefix+f"
 type = "pane"
 command = "herdr-files"
+
+[[keys.command]]
+key = "prefix+y"
+type = "pane"
+command = "herdr-yazi"

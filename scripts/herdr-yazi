@@ -1,0 +1,15 @@
+#!/bin/sh
+# Launch yazi in a split pane at current pane's directory
+
+pane_id="${HERDR_ACTIVE_PANE_ID:-}"
+cwd="${HERDR_ACTIVE_PANE_CWD:-$HOME}"
+
+[ -z "$pane_id" ] && exit 1
+
+# Split pane and get new pane id
+new_pane=$(herdr pane split "$pane_id" --direction down --cwd "$cwd" --focus 2>/dev/null | jq -r '.result.pane.pane_id // empty')
+
+[ -z "$new_pane" ] && exit 1
+
+# pane run = send-text + Enter in one call
+herdr pane run "$new_pane" "exec yazi"
