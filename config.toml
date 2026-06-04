@@ -33,19 +33,19 @@ new_workspace = ""
 [[keys.command]]
 key = "prefix+shift+n"
 type = "pane"
-command = "/Users/didi/.local/bin/herdr-new-workspace"
+command = "herdr-new-workspace"
 
 [[keys.command]]
 key = "prefix+a"
 type = "pane"
-command = "/Users/didi/.local/bin/herdr-switch-agent"
+command = "herdr-switch-agent"
 
 [[keys.command]]
 key = "prefix+u"
 type = "pane"
-command = "/Users/didi/.local/bin/herdr-urls"
+command = "herdr-urls"
 
 [[keys.command]]
 key = "prefix+f"
 type = "pane"
-command = "/Users/didi/.local/bin/herdr-files"
+command = "herdr-files"

@@ -1,0 +1,113 @@
+#!/bin/sh
+# Extract file paths from pane and open with fzf
+# Compatible with macOS and Linux, zsh and bash
+
+LOG="${TMPDIR:-/tmp}/herdr-files.log"
+exec > "$LOG" 2>&1
+echo "=== $(date) ==="
+
+# Find herdr and jq in PATH
+HERDR_BIN=$(command -v herdr) || { echo "herdr not found in PATH"; exit 1; }
+JQ_BIN=$(command -v jq) || { echo "jq not found in PATH"; exit 1; }
+
+# Get pane with claude agent (working or idle)
+pane_id=$($HERDR_BIN pane list 2>/dev/null | $JQ_BIN -r '.result.panes[] | select(.agent == "claude" and (.agent_status == "working" or .agent_status == "idle")) | .pane_id' | head -1)
+
+echo "Using pane: $pane_id"
+
+if [ -z "$pane_id" ]; then
+    echo "No pane with claude agent found"
+    exit 1
+fi
+
+# Read content from pane
+content=$($HERDR_BIN pane read "$pane_id" --source recent --lines 500 --format text 2>/dev/null)
+
+# Extract file paths - match various patterns (macOS and Linux)
+files=$(echo "$content" | grep -oE '(/Users/[a-zA-Z0-9_./-]+|/home/[a-zA-Z0-9_./-]+|~[a-zA-Z0-9_./-]+|[a-zA-Z0-9_-]+/[a-zA-Z0-9_./-]+\.[a-zA-Z]{1,10})' | sort -u)
+
+# Filter to only existing files
+files_only=""
+while IFS= read -r path; do
+  [ -z "$path" ] && continue
+  # Expand ~ to $HOME
+  case "$path" in
+    ~*) expanded="$HOME${path#\~}" ;;
+    *) expanded="$path" ;;
+  esac
+  if [ -f "$expanded" ]; then
+    files_only="$files_only$path
+"
+  fi
+done <<EOF
+$files
+EOF
+
+files_only=$(echo "$files_only" | sort -u | grep -v '^$')
+
+echo "Found files: $(echo "$files_only" | wc -l)"
+echo "Files: $files_only"
+
+if [ -z "$files_only" ]; then
+    echo "No files found"
+    exit 1
+fi
+
+# Select file with fzf
+selected=$(echo "$files_only" | fzf --prompt="Open file: " --height=40%)
+
+if [ -z "$selected" ]; then
+    echo "No selection"
+    exit 0
+fi
+
+echo "Selected: $selected"
+
+# Expand ~ to home directory
+case "$selected" in
+  ~*) expanded="$HOME${selected#\~}" ;;
+  *) expanded="$selected" ;;
+esac
+echo "Expanded: $expanded"
+
+# Check if it's a text file
+mime_type=$(file --mime-type -b "$expanded" 2>/dev/null)
+echo "Mime type: $mime_type"
+
+# Cross-platform open function
+open_file() {
+    case "$(uname -s)" in
+        Darwin) open "$1" ;;
+        Linux) xdg-open "$1" 2>/dev/null || sensible-browser "$1" 2>/dev/null || "$BROWSER" "$1" ;;
+        *) echo "Unsupported OS"; exit 1 ;;
+    esac
+}
+
+if echo "$mime_type" | grep -q "^text/"; then
+    echo "Opening as text file in new pane"
+
+    # Create new pane with --focus
+    result=$($HERDR_BIN pane split "$pane_id" --direction right --focus 2>&1)
+    echo "Split result: $result"
+
+    new_pane_id=$(echo "$result" | $JQ_BIN -r '.result.pane.pane_id // empty')
+    echo "New pane: $new_pane_id"
+
+    if [ -n "$new_pane_id" ]; then
+        # Check if it's a markdown file - use leaf, otherwise use nvim
+        case "$expanded" in
+            *.md)
+                echo "Markdown file, opening with leaf"
+                $HERDR_BIN pane run "$new_pane_id" "leaf \"$expanded\""
+                ;;
+            *)
+                echo "Opening with nvim"
+                $HERDR_BIN pane run "$new_pane_id" "nvim \"$expanded\""
+                ;;
+        esac
+        echo "Done"
+    fi
+else
+    echo "Opening with system default"
+    open_file "$expanded"
+fi

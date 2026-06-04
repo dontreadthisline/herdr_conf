@@ -1,0 +1,12 @@
+#!/bin/sh
+# Fuzzy select directory and create herdr workspace
+# Compatible with macOS and Linux, zsh and bash
+
+# Use zoxide + fzf to select directory
+selected=$(zoxide query -l | fzf --height=40% --reverse --prompt="Workspace directory> ")
+
+if [ -n "$selected" ]; then
+    # Extract directory name as workspace label
+    label=$(basename "$selected")
+    herdr workspace create --cwd "$selected" --label "$label" --focus
+fi

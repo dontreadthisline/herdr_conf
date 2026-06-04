@@ -1,0 +1,13 @@
+#!/bin/sh
+# Fuzzy select workspace and switch
+# Compatible with macOS and Linux, zsh and bash
+
+# Find jq in PATH
+JQ_BIN=$(command -v jq) || { echo "jq not found in PATH"; exit 1; }
+
+# Get workspace list
+selected=$(herdr workspace list --json 2>/dev/null | $JQ_BIN -r '.[] | "\(.label // .id) \(.cwd // "")"' | fzf --height=40% --reverse --prompt="Switch workspace> " | awk '{print $1}')
+
+if [ -n "$selected" ]; then
+    herdr workspace focus "$selected"
+fi

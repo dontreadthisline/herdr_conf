@@ -1,0 +1,13 @@
+#!/bin/sh
+# Fuzzy select agent and switch
+# Compatible with macOS and Linux, zsh and bash
+
+# Find jq in PATH
+JQ_BIN=$(command -v jq) || { echo "jq not found in PATH"; exit 1; }
+
+# Get agent list with status
+selected=$(herdr agent list 2>/dev/null | $JQ_BIN -r '.result.agents[] | "\(.pane_id)\t\(.agent_status)\t\(.cwd)"' | fzf --height=40% --reverse --prompt="Switch agent> " | cut -f1)
+
+if [ -n "$selected" ]; then
+    herdr agent focus "$selected"
+fi
