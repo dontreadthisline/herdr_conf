@@ -10,6 +10,9 @@ Custom keybindings and helper scripts for [herdr](https://herdr.dev) terminal mu
 ├── scripts/             # Helper scripts
 │   ├── herdr-files      # Fuzzy file picker
 │   ├── herdr-urls       # Fuzzy URL opener
+│   ├── herdr-lazygit    # Open lazygit in new tab
+│   ├── herdr-nvim       # Open nvim in new tab
+│   ├── herdr-yazi       # Open yazi in split pane
 │   ├── herdr-new-workspace
 │   ├── herdr-switch-agent
 │   └── herdr-switch-workspace
@@ -34,7 +37,9 @@ Custom keybindings and helper scripts for [herdr](https://herdr.dev) terminal mu
 | Tool | Description | Used by |
 |------|-------------|---------|
 | [zoxide](https://github.com/ajeetdsouza/zoxide) | Smart directory jumping | `herdr-new-workspace` |
-| [nvim](https://neovim.io/) | Text editor | `herdr-files` (non-markdown files) |
+| [nvim](https://neovim.io/) | Text editor | `herdr-files`, `herdr-nvim` |
+| [lazygit](https://github.com/jesseduffield/lazygit) | Git TUI | `herdr-lazygit` |
+| [yazi](https://github.com/sxyazi/yazi) | File manager | `herdr-yazi` |
 | [leaf](https://github.com/antonmedv/leaf) | Markdown viewer | `herdr-files` (markdown files) |
 
 ### System Tools
@@ -49,7 +54,7 @@ These are typically pre-installed on most systems:
 
 ```bash
 # Clone configuration
-git clone git@github.com:dontreadthisline/herdr_conf.git ~/.config/herdr
+git clone <repo-url> ~/.config/herdr
 
 # Create symlinks for scripts
 mkdir -p ~/.local/bin
@@ -82,6 +87,10 @@ herdr server reload-config
 | `prefix+0` | Copy mode |
 | `prefix+f` | Fuzzy file opener |
 | `prefix+u` | Fuzzy URL opener |
+| `prefix+y` | Open yazi file manager |
+| `prefix+shift+g` | Open lazygit (git repos only) |
+| `prefix+shift+v` | Open nvim in new tab |
+| `prefix+shift+x` | Close tab |
 
 > `prefix` = `ctrl+space`
 

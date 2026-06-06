@@ -1,0 +1,22 @@
+#!/bin/sh
+# Open lazygit in new tab if current pane is in a git repo
+
+cwd="${HERDR_ACTIVE_PANE_CWD:-$HOME}"
+
+# Check if it's a git repo
+git -C "$cwd" rev-parse --git-dir >/dev/null 2>&1 || exit 0
+
+# Create new tab and get tab_id and pane_id
+result=$(herdr tab create --cwd "$cwd" --focus 2>/dev/null)
+tab_id=$(echo "$result" | jq -r '.result.tab.tab_id // empty')
+pane_id=$(echo "$result" | jq -r '.result.root_pane.pane_id // empty')
+
+[ -z "$pane_id" ] && exit 1
+
+# Wait for shell to initialize then run lazygit
+sleep 0.3
+herdr pane run "$pane_id" "exec lazygit"
+
+# Focus back to the new tab
+sleep 0.1
+herdr tab focus "$tab_id"

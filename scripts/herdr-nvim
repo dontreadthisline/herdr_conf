@@ -1,0 +1,13 @@
+#!/bin/sh
+# Open nvim in new tab at current workspace directory
+
+cwd="${HERDR_ACTIVE_PANE_CWD:-$HOME}"
+
+# Create new tab with label "vim"
+result=$(herdr tab create --cwd "$cwd" --label "vim" --focus 2>/dev/null)
+pane_id=$(echo "$result" | jq -r '.result.root_pane.pane_id // empty')
+
+[ -z "$pane_id" ] && exit 1
+
+sleep 0.3
+herdr pane run "$pane_id" "exec nvim ."

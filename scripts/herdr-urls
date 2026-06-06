@@ -25,7 +25,7 @@ if [ -z "$pane_id" ]; then
 fi
 
 # Read recent content from pane and extract URLs
-urls=$($HERDR_BIN pane read "$pane_id" --source recent --lines 500 --format text 2>/dev/null | \
+urls=$($HERDR_BIN pane read "$pane_id" --source recent --lines 1000 --format text 2>/dev/null | \
   grep -oE 'https?://[^[:space:]"'"'"']+' | \
   sed 's/[^a-zA-Z0-9\/:_\.\-\?=\&]*$//' | \
   sort -u)

@@ -25,7 +25,7 @@ if [ -z "$pane_id" ]; then
 fi
 
 # Read content from pane
-content=$($HERDR_BIN pane read "$pane_id" --source recent --lines 500 --format text 2>/dev/null)
+content=$($HERDR_BIN pane read "$pane_id" --source recent --lines 1000 --format text 2>/dev/null)
 
 # Extract file paths - match various patterns (macOS and Linux)
 files=$(echo "$content" | grep -oE '(/Users/[a-zA-Z0-9_./-]+|/home/[a-zA-Z0-9_./-]+|~[a-zA-Z0-9_./-]+|[a-zA-Z0-9_-]+/[a-zA-Z0-9_./-]+\.[a-zA-Z]{1,10})' | sort -u)

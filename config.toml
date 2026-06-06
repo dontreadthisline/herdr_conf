@@ -28,7 +28,9 @@ navigate_workspace_up = "k"
 navigate_workspace_down = "j"
 previous_tab = "prefix+shift+k"
 next_tab = "prefix+shift+j"
+close_tab = "prefix+shift+x"
 new_workspace = ""
+new_worktree = ""
 
 [[keys.command]]
 key = "prefix+shift+n"
@@ -52,5 +54,15 @@ command = "herdr-files"
 
 [[keys.command]]
 key = "prefix+y"
-type = "pane"
+type = "shell"
 command = "herdr-yazi"
+
+[[keys.command]]
+key = "prefix+shift+g"
+type = "shell"
+command = "herdr-lazygit"
+
+[[keys.command]]
+key = "prefix+shift+v"
+type = "shell"
+command = "herdr-nvim"
