@@ -1,7 +1,11 @@
 #!/bin/sh
 # Open nvim in new tab at current workspace directory
 
-cwd="${HERDR_ACTIVE_PANE_CWD:-$HOME}"
+# Resolve cwd: query herdr first (reliable on both platforms)
+cwd="${HERDR_ACTIVE_PANE_CWD:-}"
+focused_cwd=$(herdr pane list 2>/dev/null | jq -r '.result.panes[] | select(.focused==true) | .cwd // empty' 2>/dev/null)
+cwd="${focused_cwd:-$cwd}"
+cwd="${cwd:-$HOME}"
 
 # Create new tab with label "vim"
 result=$(herdr tab create --cwd "$cwd" --label "vim" --focus 2>/dev/null)

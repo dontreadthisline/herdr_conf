@@ -1,7 +1,10 @@
 #!/bin/sh
 # Open lazygit in new tab if current pane is in a git repo
 
-cwd="${HERDR_ACTIVE_PANE_CWD:-$HOME}"
+cwd="${HERDR_ACTIVE_PANE_CWD:-}"
+focused_cwd=$(herdr pane list 2>/dev/null | jq -r '.result.panes[] | select(.focused==true) | .cwd // empty' 2>/dev/null)
+cwd="${focused_cwd:-$cwd}"
+cwd="${cwd:-$HOME}"
 
 # Check if it's a git repo
 git -C "$cwd" rev-parse --git-dir >/dev/null 2>&1 || exit 0

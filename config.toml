@@ -63,6 +63,6 @@ type = "shell"
 command = "herdr-lazygit"
 
 [[keys.command]]
-key = "prefix+shift+v"
+key = "prefix+shift+o"
 type = "shell"
 command = "herdr-nvim"
