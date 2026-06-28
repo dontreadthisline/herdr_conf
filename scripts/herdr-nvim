@@ -1,17 +1,34 @@
 #!/bin/sh
-# Open nvim in new tab at current workspace directory
+# Open nvim in new tab at current workspace directory.
+# If a vim tab already exists at the same cwd, focus it instead of creating a new one.
 
-# Resolve cwd: query herdr first (reliable on both platforms)
+# Resolve cwd
 cwd="${HERDR_ACTIVE_PANE_CWD:-}"
 focused_cwd=$(herdr pane list 2>/dev/null | jq -r '.result.panes[] | select(.focused==true) | .cwd // empty' 2>/dev/null)
 cwd="${focused_cwd:-$cwd}"
 cwd="${cwd:-$HOME}"
 
-# Create new tab with label "vim"
-result=$(herdr tab create --cwd "$cwd" --label "vim" --focus 2>/dev/null)
-pane_id=$(echo "$result" | jq -r '.result.root_pane.pane_id // empty')
+# Check if there's already a vim tab at the same cwd
+existing_tab=$(herdr pane list 2>/dev/null | jq -r --arg cwd "$cwd" '
+  .result.panes[]
+  | select(.cwd == $cwd)
+  | .tab_id // empty
+' 2>/dev/null | while read tab_id; do
+  label=$(herdr tab list 2>/dev/null | jq -r --arg tid "$tab_id" '
+    .result.tabs[] | select(.tab_id == $tid) | .label // empty
+  ' 2>/dev/null)
+  if [ "$label" = "vim" ]; then
+    echo "$tab_id"
+    break
+  fi
+done)
 
-[ -z "$pane_id" ] && exit 1
-
-sleep 0.3
-herdr pane run "$pane_id" "exec nvim ."
+if [ -n "$existing_tab" ]; then
+  herdr tab focus "$existing_tab" 2>/dev/null
+else
+  result=$(herdr tab create --cwd "$cwd" --label "vim" --focus 2>/dev/null)
+  pane_id=$(echo "$result" | jq -r '.result.root_pane.pane_id // empty')
+  [ -z "$pane_id" ] && exit 1
+  sleep 0.3
+  herdr pane run "$pane_id" "exec nvim ."
+fi

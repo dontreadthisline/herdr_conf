@@ -27,8 +27,12 @@ fi
 # Read content from pane
 content=$($HERDR_BIN pane read "$pane_id" --source recent --lines 1000 --format text 2>/dev/null)
 
-# Extract file paths - match various patterns (macOS and Linux)
-files=$(echo "$content" | grep -oE '(/Users/[a-zA-Z0-9_./-]+|/home/[a-zA-Z0-9_./-]+|~[a-zA-Z0-9_./-]+|[a-zA-Z0-9_-]+/[a-zA-Z0-9_./-]+\.[a-zA-Z]{1,10})' | sort -u)
+# Strip ANSI escape codes and terminal formatting
+clean=$(echo "$content" | sed 's/\x1b\[[0-9;]*[a-zA-Z]//g; s/\x1b[@-Z\\-~]//g')
+
+# Extract file paths - match absolute paths, ~/ paths, and relative file.ext forms
+	# Extract all plausible file paths: absolute, ~/, ./, ../, and relative
+	files=$(echo "$clean" | grep -oE '(/[a-zA-Z0-9_.][a-zA-Z0-9_./-]*)+|~[a-zA-Z0-9_./-]+|\.{0,2}(/[a-zA-Z0-9_.][a-zA-Z0-9_./-]*)+|[a-zA-Z0-9_.-]+(/[a-zA-Z0-9_./-]*)+' | sort -u)
 
 # Filter to only existing files
 files_only=""
